@@ -2,7 +2,8 @@
 %Emanuel Ramirez Catapano
 %Multi-class Logistic Regression
 %Realizado con datos cargados de Landsat statlog en sat_trn y sat_tst.txt
-
+%no se realizara cross validation por comentario del proveedor de los datos
+%en la descripcion. 
 
 %=============== Cargamos los datos en X e Y de entrenmiento y test========
 training = importdata('sat_trn.txt');
@@ -38,7 +39,7 @@ sel_red = X_red(rand_indices(1:100),:);
 sel_infra1 = X_infra1(rand_indices(1:100),:);
 sel_infra2 = X_infra2(rand_indices(1:100),:);
 
-%displayData(sel_red,autumn);
+%displayData(sel_red,autumn); esta funcion fue modicada para los datos
 % figure;
 %displayData(sel_green,summer);
 % figure;
@@ -48,6 +49,7 @@ sel_infra2 = X_infra2(rand_indices(1:100),:);
 
 
 %=============== Multiclass Logistic Regression ===========================
+%implementacion bastante basica pero funciona mas o menos bien.
 
 % [all_theta] = oneVsAll(training,Y,6,1);
 % [p] = predictOneVsAll(all_theta,test);
@@ -57,7 +59,9 @@ sel_infra2 = X_infra2(rand_indices(1:100),:);
 % fprintf('\nPresiona enter para continuar.');
 % pause;
 
+
 %=============== Support Vector Machines ==================================
+% hay que probar con oneVsAll para el SVM
 % valores = [0.3,1];
 % percent = zeros(2,1);
 % 
@@ -78,63 +82,69 @@ sel_infra2 = X_infra2(rand_indices(1:100),:);
 
 
 %=============== Neural Networks ==========================================
-num_entradas  = 36;  
-num_ocultas = 21;   
-num_etiquetas = 6;
-
-fprintf('\nIniciamos pesos aleatorios para los parametros\n')
-
-theta1_inicial = pesosAleatorios(num_entradas, num_ocultas);
-theta2_inicial = pesosAleatorios(num_ocultas, num_etiquetas);
 
 
-% hablar sobre regularizacion de parametros /255 
-% desenrollamos parametros
-params_rn_inicial = [theta1_inicial(:) ; theta2_inicial(:)];
-testing_iter = [50,70,100,150,200,300];
-testing_lambda = [0,0.1,0.3,1,3,10,30];
-fprintf('\nEntrenamiento de red neuronal \n');
-results = zeros(length(testing_iter),length(testing_lambda));
-for i=1:length(testing_iter)
-    options = optimset('MaxIter',testing_iter(i));
-    for j=1:length(testing_lambda)
-        costFunction = @(p) costeRN(p, ...
-                                           num_entradas, ...
-                                           num_ocultas, ...
-                                           num_etiquetas, training/255, Y, testing_lambda(j));
-        [params_rn, cost] = fmincg(costFunction, params_rn_inicial, options);
-
-        % Obtenemos theta de params_rn
-        Theta1 = reshape(params_rn(1:num_ocultas * (num_entradas + 1)), ...
-                         num_ocultas, (num_entradas + 1));
-
-        Theta2 = reshape(params_rn((1 + (num_ocultas * (num_entradas + 1))):end), ...
-                         num_etiquetas, (num_ocultas + 1));
-
-        % fprintf('Presiona Enter');
-        % pause;
-        % 
-        % fprintf('\nMostrando pesos de la Red... \n')
-
-        %displayData(Theta1(:, 2:end));
-
-
-        % fprintf('\nPresione Enter para continuar.\n');
-        % pause;
-
-        pred = predecir(Theta1, Theta2, test/255);
-        results(i,j) = mean(double(pred == Y_test)) * 100;
-    end
-end
-fprintf('\nLa tasa de aciertos es:  %f\n', mean(double(pred == Y_test)) * 100);
+% %un 81% de aciertos, falta mejorar
+% num_entradas  = 36;  
+% num_ocultas = 42;   
+% num_etiquetas = 6;
+% 
+% %aplicamos regularizacion
+% training = training/255;
+% test = test/255;
+% fprintf('\nIniciamos pesos aleatorios para los parametros\n')
+% 
+% theta1_inicial = pesosAleatorios(num_entradas, num_ocultas);
+% theta2_inicial = pesosAleatorios(num_ocultas, num_etiquetas);
+% 
+% % usa gradient Checking antes de entrenar solamente.
+% 
+% % hablar sobre regularizacion de parametros /255 
+% % desenrollamos parametros
+% params_rn_inicial = [theta1_inicial(:) ; theta2_inicial(:)];
+% lambda = 1;
+% fprintf('\nEntrenamiento de red neuronal \n');
+% checkNNGradients;
+% options = optimset('MaxIter',70);
+% costFunction = @(p) costeRN(p,num_entradas,num_ocultas,num_etiquetas,...
+%     training, Y, lambda);
+% [params_rn, cost] = fmincg(costFunction, params_rn_inicial, options);
+% 
+% costFunction = @(p) costeRN(p,num_entradas,num_ocultas,num_etiquetas,...
+%     test, Y_test, lambda);
+% [params_rn_test, cost_test] = fmincg(costFunction, params_rn_inicial, options);
+% 
+% % Obtenemos theta de params_rn
+% Theta1 = reshape(params_rn(1:num_ocultas * (num_entradas + 1)), ...
+%                                  num_ocultas, (num_entradas + 1));
+% 
+% Theta2 = reshape(params_rn((1 + (num_ocultas * (num_entradas + 1))):end), ...
+%                                  num_etiquetas, (num_ocultas + 1));
+% 
+% 
+% Theta11 = Theta1(:);                             
+% rand_indices = randperm(length(Theta1(:)));
+% sel_Theta1 = Theta11(rand_indices(1:70),:);
+% plot(cost,sel_Theta1);
+% % fprintf('Presiona Enter');
+% % pause;
+% % fprintf('\nMostrando pesos de la Red... \n')
+% %displayData(Theta1(:, 2:end));
+% % fprintf('\nPresione Enter para continuar.\n');
+% % pause;
+% pred = predecir(Theta1, Theta2, test);
+% resultado = mean(double(pred == Y_test)) * 100;
+% fprintf('\nLa tasa de aciertos es:  %f\n', resultado);
 
 
 
 %=============== Clustering ===============================================
 
 %Para esta parte intento tomar los datos como un problema de aprendizaje
-%no supervisado, para ver si los ejemplos forman algun tipo de cluster y
-%luego comparare con las prediccion de validacion.
+%no supervisado, para ver si los ejemplos forman algun tipo de clusters y
+%luego comparare con las prediccion de validacion
 
-
+randidx = randperm(size(training,1));
+centroides = training(randidx(1:6),:);
+runkMeans(training,centroides,10,true);
 
