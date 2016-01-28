@@ -6,9 +6,7 @@
 
 
 % Damos Valores para el tama?o de nuestra red neuronal
-num_entradas  = 400;  
-num_ocultas = 25;   
-num_etiquetas = 10;             
+        
                           
 
 % =========== Primera Parte: visualizacion de datos =============
@@ -35,11 +33,11 @@ load('ex4weights.mat');
 % Los desenrollamos 
 params_rn = [Theta1(:) ; Theta2(:)];
 
-% ================ Part 3: Compute Cost (Feedforward) ================
+% ================ Coste (Feedforward) ====================================
 
 fprintf('\nRealizamos la propagacion para el calculo del coste: \n')
 
-% Weight regularization parameter (we set this to 0 here).
+% eleccion de Lambda para regularizacion
 lambda = 0;
 
 J = costeRN(params_rn, num_entradas, num_ocultas, ...
@@ -50,10 +48,7 @@ fprintf(['El coste con los parametros cargados de ex4weights: %f '], J);
 fprintf('Presiona Enter');
 pause;
 
-% =============== Part 4: Implement Regularization ===============
-%  Once your cost function implementation is correct, you should now
-%  continue to implement the regularization with the cost.
-%
+% =============== Implementacion de la regularizacion =====================
 
 fprintf('\nCalculamos el coste con reguralizacion\n')
 
@@ -64,12 +59,11 @@ J = costeRN(params_rn, num_entradas, num_ocultas, ...
                    num_etiquetas, X, y, lambda);
 
 fprintf(['El costo con los parametros cargados de ex4weights y con reguralizacion es: %f '], J);
-
 fprintf('Presiona Enter');
 pause;
 
 
-% ================ Part 5: Sigmoid Gradient  ================
+% ================Gradiente sigmoide  =====================================
 
 fprintf('\nEvaluamos el Sigmoide Gradiente')
 
@@ -82,7 +76,7 @@ fprintf('Presiona Enter');
 pause;
 
 
-% ================ Part 6: Initializing Pameters ================
+% ================ Inicializamos los parametros ===========================
 
 
 fprintf('\nIniciamos pesos aleatorios para los parametros\n')
@@ -94,7 +88,7 @@ theta2_inicial = pesosAleatorios(num_ocultas, num_etiquetas);
 params_rn_inicial = [theta1_inicial(:) ; theta2_inicial(:)];
 
 
-% =============== Part 7: Implement Backpropagation ===============
+% ================ Backpropagation ========================================
 
 fprintf('\nImplementando Retro-Propagacion \n');
 
@@ -105,7 +99,7 @@ pause;
 
 
 
-% =============== Part 8: Implement Regularization ===============
+% =============== Regularizacion ==========================================
 
 
 fprintf('\nRetro-propagacion con reguralizacion ... \n')
@@ -126,7 +120,7 @@ checkNNGradients(lambda);
 % pause;
 
 
-% =================== Part 8: Training NN ===================
+% =================== Entramiento de la Red Neuronal=======================
 
 
 fprintf('\nEntrenamiento de red neuronal \n')
@@ -150,20 +144,16 @@ fprintf('Presiona Enter');
 pause;
 
 
-% ================= Part 9: Visualize Weights =================
-%  You can now "visualize" what the neural network is learning by 
-%  displaying the hidden units to see what features they are capturing in 
-%  the data.
+% ================= Visualizamos los pesos de la capa oculta ==============
 
-fprintf('\nVisualizing Neural Network... \n')
 
 displayData(Theta1(:, 2:end));
 
 
-fprintf('\nProgram paused. Press enter to continue.\n');
+fprintf('\nPresione enter\n');
 pause;
 
-% ================= Part 10: Implement Predict =================
+% ================= Implementamos las Predicciones  =======================
 
 
 pred = predecir(Theta1, Theta2, X);

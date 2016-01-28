@@ -1,4 +1,4 @@
-function [J,grad] = costeRN(params_rn,num_entradas,num_ocultas,...
+function [J,grad] = costeRN2(params_rn,num_entradas,num_ocultas1,num_ocultas2...
     num_etiquetas,X,y,lambda)
     %costeRN calcula el coste y el gradiente de una red neuronal de dos
     %capas
@@ -6,6 +6,8 @@ function [J,grad] = costeRN(params_rn,num_entradas,num_ocultas,...
     Theta1 = reshape(params_rn(1:num_ocultas*(num_entradas+1)),... 
       num_ocultas,(num_entradas+1));
     Theta2 = reshape(params_rn((1 + (num_ocultas * (num_entradas + 1))):end), ...
+                 num_etiquetas, (num_ocultas + 1));
+    Theta3 = reshape(params_rn((1 + (num_ocultas * (num_entradas + 1))):end), ...
                  num_etiquetas, (num_ocultas + 1));
  
   %el numero de ejemplos de entrenamiento
@@ -43,28 +45,27 @@ function [J,grad] = costeRN(params_rn,num_entradas,num_ocultas,...
         a1 = [1; X(t,:)'];
         z2 = Theta1 * a1;
         a2 = [1; sigmoide(z2)];
-
         z3 = Theta2 * a2;
         a3 = sigmoide(z3);
+        
+        z4 = Theta3 * a3;
+        a4 = sigmoide(z4);
 
         yy = ([1:num_etiquetas]==y(t))';
      
-        delta_3 = a3 - yy;
+        delta_4 = a4 - yy;
 
+        delta_3 = (Theta3' * delta_4) .* [1; sigmoideGradiente(z3)];
         delta_2 = (Theta2' * delta_3) .* [1; sigmoideGradiente(z2)];
-        delta_2 = delta_2(2:end);
+        delta_3 = delta_3(2:end);
 
        
         Theta1_grad = Theta1_grad + delta_2 * a1';
         Theta2_grad = Theta2_grad + delta_3 * a2';
+        Theta3_grad = Theta3_grad + delta_4 * a3';
     end
-
     Theta1_grad = (1/m) * Theta1_grad + (lambda/m) * [zeros(size(Theta1, 1), 1) Theta1(:,2:end)];
     Theta2_grad = (1/m) * Theta2_grad + (lambda/m) * [zeros(size(Theta2, 1), 1) Theta2(:,2:end)];
-
-
-
-    grad = [Theta1_grad(:) ; Theta2_grad(:)];
-
-
+    Theta3_grad = (1/m) * Theta3_grad + (lambda/m) * [zeros(size(Theta3, 1), 1) Theta3(:,2:end)];
+    grad = [Theta1_grad(:) ; Theta2_grad(:);Theta3_grad(:)];
 end
