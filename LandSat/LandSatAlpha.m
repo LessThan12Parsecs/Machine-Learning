@@ -9,28 +9,20 @@
 training = importdata('sat_trn.txt');
 test = importdata('sat_tst.txt');
 
-
 Y = training(:,37);
 training(:,37) = [];
 Y_test = test(:,37);
 test(:,37) = [];
-
 
 %cambio los valores que sean 7 por 6, ya que la clase 6 no existe por
 %limitaciones de los ejemplos de datos. 
 Y(Y==7) = 6;
 Y_test(Y_test==7)=6;
 
-allData = [[training Y]; [test Y_test]];
+
 %tomamos solo los pixeles centrales para pruebas de efectividad.
 X_cen_trn = training(:,17:20);
 X_cen_tst = test(:,17:20);
-%creo una matriz de entrenamiento y una de la validacion para usarlas en la
-%classification app de matlab.
-
-XTrain = [X_cen_trn Y];
-XTest = [X_cen_tst Y_test];
-XApp = [XTrain;XTest];
 X_cen_trn_reg = X_cen_trn/255;
 X_cen_tst_reg = X_cen_tst/255;
 
@@ -111,27 +103,21 @@ X_cenTst = featureNormalize(X_cen_tst_reg);
 
 %=============== Support Vector Machines ==================================
 
-
-
-
-
 %=============== Neural Networks ==========================================
 
 % 
-%un 86% de aciertos
+%un 81% de aciertos, falta mejorar
 num_entradas  = 4;  
 num_ocultas = [4,10,15,20];
 num_etiquetas = 6;
 resultados = zeros(length(lambdas),length(num_ocultas));
-times = zeros(length(lambdas),length(num_ocultas));
 
 % usa gradient Checking antes de entrenar solamente.
- %checkNNGradients;
+ checkNNGradients;
 
 fprintf('\nEntrenamiento de red neuronal \n');
 for i=1:length(num_ocultas)
     for j=1:length(lambdas)
-        tic;
         theta1_inicial = pesosAleatorios(num_entradas, num_ocultas(i));
         theta2_inicial = pesosAleatorios(num_ocultas(i), num_etiquetas);
         params_rn_inicial = [theta1_inicial(:) ; theta2_inicial(:)];
@@ -145,19 +131,11 @@ for i=1:length(num_ocultas)
                                  num_etiquetas, (num_ocultas(i) + 1));
         pred = predecir(Theta1, Theta2, X_cenTrn);
         resultados(i,j) = mean(double(pred == Y)) * 100;
-        times(i,j) = toc;
     end
 end
+[max,index] = max(resultados(:));
+fprintf('\nLa tasa mayor de aciertos es:  %f  para lambda: %f y con %i capas ocultas\n',max,lambdas(round(index/4)),num_ocultas(mod(index,4)));
 
-
-[ma,in] = max(resultados(:));
-[I,J] = ind2sub([length(lambdas),length(num_ocultas)],in);
-fprintf('\nLa tasa mayor de aciertos es:  %f, con lambda: %f y %i capas ocultas\n',ma,lambdas(J),num_ocultas(I));
-plot(num_ocultas,resultados(:,J));
-xlabel('Numero de neuronas en la capa oculta');
-ylabel('Tasa de acierto');
-plot(num_ocultas,resultados(:,1));
-legend('lambda = ' +lambdas(J),'lambda =' +lambdas(1));
 
 %=============== Classification Trees =====================================
 %usamos la funcion del toolbox de matlab para el entrenamiento de un arbol
