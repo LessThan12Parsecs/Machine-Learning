@@ -12,21 +12,16 @@ n = size(X,2);
 
 X = [ones(m,1) X];
 
-%inicializamos todos los valores de todos los thetas
-all_thetas = zeros(num_etiquetas, n+1);
-
-%valores iniciales para theta 
-theta_inicio = zeros(n+1,1);
-%guardamos las opciones que queremos para el fmincg
-options = optimset('GradObj', 'on', 'MaxIter', 50);
+%inicializamos todos los valores de todos los modelos
+all_models = zeros(num_etiquetas, n+1);
 
 %calculamos los valores para cada etiqueta
 
 for i = 1:num_etiquetas
    c = i * ones(size(y));
    actual = y==c;
-   [model] = svmTrain(X,actual,valores(iC),@(x1,x2) gaussianKernel(x1,x2,valores(iSigma)));
-   all_models(i,:) = theta; 
+   model = fitcsvm(X,actual,'KernelFunction','rbf','Standardize',true);
+   all_models(i,:) = model; 
 end
 
 end
